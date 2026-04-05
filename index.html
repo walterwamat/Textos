@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Bíblico - Transparente y Dinámico</title>
+    <!-- Importar fuentes de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Variables CSS para los colores dinámicos */
+        :root {
+            --card-bg: rgba(26, 60, 90, 0.85); /* Fondo del cuadro (semitransparente para efecto cristal) */
+            --text-color: #ffffff; /* Color de las letras del versículo */
+            --accent-color: #87CEEB; /* Color de referencias, barra de tiempo y decoraciones */
+        }
+
+        /* FONDO TOTALMENTE TRANSPARENTE */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: transparent; /* Fondo general invisible */
+            font-family: 'Lora', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* Nubes y Flores con color dinámico */
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.2; /* Muy sutil para no estorbar el video de atrás */
+            transition: opacity 1.5s;
+        }
+        .cloud {
+            position: absolute;
+            /* La nube toma el color de fondo dinámico */
+            background: radial-gradient(circle, var(--card-bg) 0%, transparent 70%);
+            border-radius: 50%;
+            transition: background 1.5s ease;
+        }
+        .cloud-1 { width: 600px; height: 400px; top: -100px; left: -100px; }
+        .cloud-2 { width: 500px; height: 350px; bottom: -50px; right: -50px; }
+        .cloud-3 { width: 400px; height: 300px; top: 20%; right: 10%; opacity: 0.4; }
+
+        .flowers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 2;
+        }
+        .flower-svg {
+            position: absolute;
+            fill: var(--accent-color); /* Toma el color de acento dinámico */
+            opacity: 0.4;
+            width: 150px;
+            height: auto;
+            transition: fill 1.5s ease;
+        }
+        .flower-tl { top: -20px; left: -20px; transform: rotate(45deg); }
+        .flower-br { bottom: -20px; right: -20px; transform: rotate(225deg); }
+
+        /* Contenedor principal del texto */
+        .verse-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 950px;
+            padding: 50px 60px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--accent-color);
+            transition: opacity 1.5s ease-in-out, background 1.5s ease-in-out, border-color 1.5s ease-in-out;
+            opacity: 1;
+        }
+
+        .fade-out {
+            opacity: 0;
+        }
+
+        /* Estilos tipográficos */
+        .verse-text {
+            font-size: 2.8rem;
+            line-height: 1.4;
+            margin-bottom: 30px;
+            font-weight: 500;
+            color: var(--text-color);
+            transition: color 1.5s ease-in-out;
+        }
+        
+        .verse-text::before { content: "«"; color: var(--accent-color); margin-right: 8px; transition: color 1.5s; }
+        .verse-text::after { content: "»"; color: var(--accent-color); margin-left: 8px; transition: color 1.5s; }
+
+        .verse-ref {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 1.5s ease-in-out;
+        }
+
+        /* Barra de progreso */
+        .progress-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.15);
+            z-index: 20;
+        }
+        .progress-bar {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 1s linear, background 1.5s ease-in-out;
+        }
+
+        /* Responsividad para móviles */
+        @media (max-width: 768px) {
+            .verse-text { font-size: 1.8rem; }
+            .verse-container { padding: 30px; margin: 20px; }
+            .verse-ref { font-size: 1.1rem; }
+            .flower-svg { width: 100px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="clouds">
+        <div class="cloud cloud-1"></div>
+        <div class="cloud cloud-2"></div>
+        <div class="cloud cloud-3"></div>
+    </div>
+
+    <div class="flowers">
+        <svg class="flower-svg flower-tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 0 C60 30 70 40 100 50 C70 60 60 70 50 100 C40 70 30 60 0 50 C30 40 40 30 50 0 Z"/>
+            <circle cx="50" cy="50" r="10" />
+        </svg>
+        <svg class="flower-svg flower-br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 0 C60 30 70 40 100 50 C70 60 60 70 50 100 C40 70 30 60 0 50 C30 40 40 30 50 0 Z"/>
+            <circle cx="50" cy="50" r="10" />
+        </svg>
+    </div>
+
+    <div class="verse-container" id="verse-container">
+        <div class="verse-text" id="verse-text">Cargando la Palabra...</div>
+        <div class="verse-ref" id="verse-ref">-</div>
+    </div>
+
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <script>
+        // TEMAS DE COLORES DINÁMICOS
+        // Cada vez que cambia el verso, elige uno de estos estilos
+        const colorThemes = [
+            { bg: "rgba(26, 60, 90, 0.88)", text: "#ffffff", accent: "#87CEEB" },   // Azul Marino / Celeste
+            { bg: "rgba(90, 30, 45, 0.88)", text: "#ffffff", accent: "#F5CBA7" },   // Vino Tinto / Durazno
+            { bg: "rgba(30, 75, 60, 0.88)", text: "#ffffff", accent: "#A9DFBF" },   // Verde Bosque / Menta
+            { bg: "rgba(255, 255, 255, 0.88)", text: "#000000", accent: "#1A5276" },// Blanco Perla / Azul Oscuro
+            { bg: "rgba(60, 40, 90, 0.88)", text: "#ffffff", accent: "#D7BDE2" },   // Púrpura Real / Lila
+            { bg: "rgba(20, 80, 90, 0.88)", text: "#ffffff", accent: "#A3E4D7" },   // Verde Azulado / Cyan
+            { bg: "rgba(10, 10, 10, 0.85)", text: "#FDFEFE", accent: "#F1C40F" },   // Negro Cristalino / Dorado
+            { bg: "rgba(120, 65, 20, 0.88)", text: "#ffffff", accent: "#F9E79F" },  // Bronce / Amarillo Claro
+            { bg: "rgba(240, 240, 240, 0.88)", text: "#2C3E50", accent: "#E74C3C" },// Gris Claro / Rojo Coral
+        ];
+
+        // MÁS DE 230 VERSÍCULOS EN TOTAL (Reina Valera 1960)
+        const verses = [
+            // --- AMOR (25 Versículos) ---
+            { ref: "1 Corintios 13:4-5", text: "El amor es sufrido, es benigno; el amor no tiene envidia, el amor no es jactancioso, no se envanece; no hace nada indebido, no busca lo suyo, no se irrita, no guarda rencor." },
+            { ref: "1 Juan 4:8", text: "El que no ama, no ha conocido a Dios; porque Dios es amor." },
+            { ref: "1 Juan 4:16", text: "Y nosotros hemos conocido y creído el amor que Dios tiene para con nosotros. Dios es amor; y el que permanece en amor, permanece en Dios, y Dios en él." },
+            { ref: "1 Juan 4:19", text: "Nosotros le amamos a él, porque él nos amó primero." },
+            { ref: "Jeremías 31:3", text: "Jehová se manifestó a mí hace ya mucho tiempo, diciendo: Con amor eterno te he amado; por tanto, te prolongué mi misericordia." },
+            { ref: "Colosenses 3:14", text: "Y sobre todas estas cosas vestíos de amor, que es el vínculo perfecto." },
+            { ref: "Juan 13:34", text: "Un mandamiento nuevo os doy: Que os améis unos a otros; como yo os he amado, que también os améis unos a otros." },
+            { ref: "Romanos 13:10", text: "El amor no hace mal al prójimo; así que el cumplimiento de la ley es el amor." },
+            { ref: "Juan 3:16", text: "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito, para que todo aquel que en él cree, no se pierda, mas tenga vida eterna." },
+            { ref: "Romanos 5:8", text: "Mas Dios muestra su amor para con nosotros, en que siendo aún pecadores, Cristo murió por nosotros." },
+            { ref: "Juan 15:13", text: "Nadie tiene mayor amor que este, que uno ponga su vida por sus amigos." },
+            { ref: "1 Pedro 4:8", text: "Y ante todo, tened entre vosotros ferviente amor; porque el amor cubrirá multitud de pecados." },
+            { ref: "Romanos 8:38-39", text: "Por lo cual estoy seguro de que ni la muerte, ni la vida... nos podrá separar del amor de Dios, que es en Cristo Jesús Señor nuestro." },
+            { ref: "Efesios 2:4-5", text: "Pero Dios, que es rico en misericordia, por su gran amor con que nos amó, aun estando nosotros muertos en pecados, nos dio vida juntamente con Cristo." },
+            { ref: "Sofonías 3:17", text: "Jehová está en medio de ti, poderoso, él salvará; se gozará sobre ti con alegría, callará de amor, se regocijará sobre ti con cánticos." },
+            { ref: "Juan 14:21", text: "El que tiene mis mandamientos, y los guarda, ese es el que me ama; y el que me ama, será amado por mi Padre, y yo le amaré, y me manifestaré a él." },
+            { ref: "Romanos 8:35", text: "¿Quién nos separará del amor de Cristo? ¿Tribulación, o angustia, o persecución, o hambre, o desnudez, o peligro, o espada?" },
+            { ref: "Gálatas 2:20", text: "Con Cristo estoy juntamente crucificado, y ya no vivo yo, mas vive Cristo en mí; y lo que ahora vivo en la carne, lo vivo en la fe del Hijo de Dios, el cual me amó y se entregó a sí mismo por mí." },
+            { ref: "Efesios 3:17-19", text: "Para que habite Cristo por la fe en vuestros corazones, a fin de que, arraigados y cimentados en amor... conozcáis el amor de Cristo, que excede a todo conocimiento." },
+            { ref: "1 Juan 3:1", text: "Mirad cuál amor nos ha dado el Padre, para que seamos llamados hijos de Dios." },
+            { ref: "1 Juan 4:10", text: "En esto consiste el amor: no en que nosotros hayamos amado a Dios, sino en que él nos amó a nosotros, y envió a su Hijo en propiciación por nuestros pecados." },
+            { ref: "1 Juan 4:11", text: "Amados, si Dios nos ha amado así, debemos también nosotros amarnos unos a otros." },
+            { ref: "1 Juan 4:12", text: "Nadie ha visto jamás a Dios. Si nos amamos unos a otros, Dios permanece en nosotros, y su amor se ha perfeccionado en nosotros." },
+            { ref: "Proverbios 10:12", text: "El odio despierta rencillas; pero el amor cubrirá todas las faltas." },
+            { ref: "Cantares 8:7", text: "Las muchas aguas no podrán apagar el amor, ni lo ahogarán los ríos." },
+            
+            // --- FE (26 Versículos) ---
+            { ref: "Hebreos 11:1", text: "Es, pues, la fe la certeza de lo que se espera, la convicción de lo que no se ve." },
+            { ref: "Hebreos 11:6", text: "Pero sin fe es imposible agradar a Dios; porque es necesario que el que se acerca a Dios crea que le hay, y que es galardonador de los que le buscan." },
+            { ref: "Romanos 10:17", text: "Así que la fe es por el oír, y el oír, por la palabra de Dios." },
+            { ref: "Efesios 2:8-9", text: "Porque por gracia sois salvos por medio de la fe; y esto no de vosotros, pues es don de Dios; no por obras, para que nadie se gloríe." },
+            { ref: "1 Juan 5:4", text: "Porque todo lo que es nacido de Dios vence al mundo; y esta es la victoria que ha vencido al mundo, nuestra fe." },
+            { ref: "Santiago 2:17", text: "Así también la fe, si no tiene obras, es muerta en sí misma." },
+            { ref: "2 Corintios 5:7", text: "Porque por fe andamos, no por vista." },
+            { ref: "Romanos 1:17", text: "Porque en el evangelio la justicia de Dios se descubre por fe y para fe, como está escrito: Mas el justo por la fe vivirá." },
+            { ref: "Habacuc 2:4", text: "He aquí que aquel cuya alma no es recta, se enorgullece; mas el justo por su fe vivirá." },
+            { ref: "Mateo 17:20", text: "Si tuviereis fe como un grano de mostaza, diréis a este monte: Pásate de aquí allá, y se pasará; y nada os será imposible." },
+            { ref: "Marcos 11:22", text: "Respondiendo Jesús, les dijo: Tened fe en Dios." },
+            { ref: "Romanos 5:1", text: "Justificados, pues, por la fe, tenemos paz para con Dios por medio de nuestro Señor Jesucristo." },
+            { ref: "Gálatas 2:16", text: "Sabiendo que el hombre no es justificado por las obras de la ley, sino por la fe de Jesucristo..." },
+            { ref: "Santiago 1:6", text: "Pero pida con fe, no dudando nada; porque el que duda es semejante a la onda del mar, que es arrastrada por el viento y echada de una parte a otra." },
+            { ref: "1 Pedro 1:5", text: "Que sois guardados por el poder de Dios mediante la fe, para alcanzar la salvación que está preparada para ser manifestada en el tiempo postrero." },
+            { ref: "1 Timoteo 6:12", text: "Pelea la buena batalla de la fe, echa mano de la vida eterna, a la cual asimismo fuiste llamado." },
+            { ref: "Hebreos 11:3", text: "Por la fe entendemos haber sido constituido el universo por la palabra de Dios, de modo que lo que se ve fue hecho de lo que no se veía." },
+            { ref: "Romanos 4:20-21", text: "Tampoco dudó, por incredulidad, de la promesa de Dios, sino que se fortaleció en fe, dando gloria a Dios, plenamente convencido de que era también poderoso para hacer todo lo que había prometido." },
+            { ref: "Gálatas 3:11", text: "Y que por la ley ninguno se justifica para con Dios, es evidente, porque: El justo por la fe vivirá." },
+            { ref: "Gálatas 3:26", text: "Pues todos sois hijos de Dios por la fe en Cristo Jesús." },
+            { ref: "Efesios 3:12", text: "En quien tenemos seguridad y acceso con confianza por medio de la fe en él." },
+            { ref: "Efesios 6:16", text: "Sobre todo, tomad el escudo de la fe, con que podáis apagar todos los dardos de fuego del maligno." },
+            { ref: "Filipenses 3:9", text: "Y ser hallado en él, no teniendo mi propia justicia, que es por la ley, sino la que es por la fe de Cristo, la justicia que es de Dios por la fe." },
+            { ref: "Colosenses 1:23", text: "Si en verdad permanecéis fundados y firmes en la fe, y sin moveros de la esperanza del evangelio que habéis oído." },
+            { ref: "Hebreos 10:38", text: "Mas el justo vivirá por fe; y si retrocediere, no agradará a mi alma." },
+            { ref: "1 Pedro 1:8-9", text: "A quien amáis sin haberle visto, en quien creyendo, aunque ahora no lo veáis, os alegráis con gozo inefable y glorioso; obteniendo el fin de vuestra fe, que es la salvación de vuestras almas." },
+
+            // --- CONFIANZA (26 Versículos) ---
+            { ref: "Proverbios 3:5-6", text: "Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas." },
+            { ref: "Isaías 26:3", text: "Tú guardarás en completa paz a aquel cuyo pensamiento en ti persevera; porque en ti ha confiado." },
+            { ref: "Salmos 56:3", text: "En el día que temo, yo en ti confío." },
+            { ref: "Salmos 91:2", text: "Diré yo a Jehová: Esperanza mía, y castillo mío; mi Dios, en quien confiaré." },
+            { ref: "Jeremías 17:7", text: "Bendito el varón que confía en Jehová, y cuya confianza es Jehová." },
+            { ref: "Salmos 37:5", text: "Encomienda a Jehová tu camino, y confía en él; y él hará." },
+            { ref: "Salmos 62:8", text: "Esperad en él en todo tiempo, oh pueblos; derramad delante de él vuestro corazón; Dios es nuestro refugio." },
+            { ref: "Isaías 12:2", text: "He aquí Dios es salvación mía; me aseguraré y no temeré; porque mi fortaleza y mi canción es JAH Jehová, quien ha sido salvación para mí." },
+            { ref: "Salmos 118:8", text: "Mejor es confiar en Jehová que confiar en el hombre." },
+            { ref: "Jeremías 17:8", text: "Porque será como el árbol plantado junto a las aguas, que junto a la corriente echará sus raíces... y en el año de sequía no se fatigará, ni dejará de dar fruto." },
+            { ref: "Salmos 125:1", text: "Los que confían en Jehová son como el monte de Sion, que no se mueve, sino que permanece para siempre." },
+            { ref: "Nahúm 1:7", text: "Jehová es bueno, fortaleza en el día de la angustia; y conoce a los que en él confían." },
+            { ref: "Romanos 8:28", text: "Y sabemos que a los que aman a Dios, todas las cosas les ayudan a bien, esto es, a los que conforme a su propósito son llamados." },
+            { ref: "Salmos 28:7", text: "Jehová es mi fortaleza y mi escudo; en él confió mi corazón, y fui ayudado." },
+            { ref: "Salmos 9:10", text: "En ti confiarán los que conocen tu nombre, por cuanto tú, oh Jehová, no desamparaste a los que te buscaron." },
+            { ref: "Isaías 41:10", text: "No temas, porque yo estoy contigo; no desmayes, porque yo soy tu Dios que te esfuerzo; siempre te ayudaré, siempre te sustentaré con la diestra de mi justicia." },
+            { ref: "Salmos 20:7", text: "Estos confían en carros, y aquéllos en caballos; mas nosotros del nombre de Jehová nuestro Dios tendremos memoria." },
+            { ref: "Salmos 31:14", text: "Mas yo en ti confío, oh Jehová; Digo: Tú eres mi Dios." },
+            { ref: "Salmos 34:8", text: "Gustad, y ved que es bueno Jehová; Dichoso el hombre que confía en él." },
+            { ref: "Salmos 40:4", text: "Bienaventurado el hombre que puso en Jehová su confianza, y no mira a los soberbios, ni a los que se desvían tras la mentira." },
+            { ref: "Salmos 46:1-2", text: "Dios es nuestro amparo y fortaleza, nuestro pronto auxilio en las tribulaciones. Por tanto, no temeremos, aunque la tierra sea removida." },
+            { ref: "Salmos 62:5", text: "Alma mía, en Dios solamente reposa, porque de él es mi esperanza." },
+            { ref: "Salmos 84:12", text: "Jehová de los ejércitos, dichoso el hombre que en ti confía." },
+            { ref: "Salmos 143:8", text: "Hazme oír por la mañana tu misericordia, porque en ti he confiado; hazme saber el camino por donde ande, porque a ti he elevado mi alma." },
+            { ref: "Proverbios 16:20", text: "El que está atento a la palabra hallará el bien, y el que confía en Jehová es bienaventurado." },
+            { ref: "Isaías 50:10", text: "¿Quién hay entre vosotros que teme a Jehová, y oye la voz de su siervo? El que anda en tinieblas y carece de luz, confíe en el nombre de Jehová, y apóyese en su Dios." },
+
+            // --- PRUEBAS (24 Versículos) ---
+            { ref: "Santiago 1:2-3", text: "Hermanos míos, tened por sumo gozo cuando os halléis en diversas pruebas, sabiendo que la prueba de vuestra fe produce paciencia." },
+            { ref: "1 Pedro 1:7", text: "Para que sometida a prueba vuestra fe, mucho más preciosa que el oro, el cual aunque perecedero se prueba con fuego, sea hallada en alabanza, gloria y excelencia..." },
+            { ref: "1 Corintios 10:13", text: "No os ha sobrevenido ninguna tentación que no sea humana; pero fiel es Dios, que no os dejará ser tentados más de lo que podéis resistir..." },
+            { ref: "Isaías 43:2", text: "Cuando pases por las aguas, yo estaré contigo; y si por los ríos, no te anegarán. Cuando pases por el fuego, no te quemarás, ni la llama arderá en ti." },
+            { ref: "Santiago 1:12", text: "Bienaventurado el varón que soporta la tentación; porque cuando haya resistido la prueba, recibirá la corona de vida..." },
+            { ref: "Romanos 5:3-4", text: "Y no solo esto, sino que también nos gloriamos en las tribulaciones, sabiendo que la tribulación produce paciencia; y la paciencia, prueba; y la prueba, esperanza." },
+            { ref: "Job 23:10", text: "Mas él conoce mi camino; me probará, y saldré como oro." },
+            { ref: "Salmos 66:10", text: "Porque tú nos probaste, oh Dios; nos ensayaste como se afina la plata." },
+            { ref: "2 Pedro 2:9", text: "Sabe el Señor librar de tentación a los piadosos." },
+            { ref: "Salmos 34:19", text: "Muchas son las aflicciones del justo, pero de todas ellas le librará Jehová." },
+            { ref: "Deuteronomio 31:8", text: "Y Jehová va delante de ti; él estará contigo, no te dejará, ni te desamparará; no temas ni te intimides." },
+            { ref: "1 Pedro 4:12-13", text: "Amados, no os sorprendáis del fuego de prueba que os ha sobrevenido... sino gozaos por cuanto sois participantes de los padecimientos de Cristo." },
+            { ref: "1 Pedro 5:10", text: "Mas el Dios de toda gracia, que nos llamó a su gloria eterna en Jesucristo, después que hayáis padecido un poco de tiempo, él mismo os perfeccione, afirme, fortalezca y establezca." },
+            { ref: "2 Corintios 4:17", text: "Porque esta leve tribulación momentánea produce en nosotros un cada vez más excelente y eterno peso de gloria." },
+            { ref: "Salmos 119:71", text: "Bueno me es haber sido humillado, para que aprenda tus estatutos." },
+            { ref: "Romanos 8:18", text: "Pues tengo por cierto que las aflicciones del tiempo presente no son comparables con la gloria venidera que en nosotros ha de manifestarse." },
+            { ref: "2 Corintios 1:4", text: "El cual nos consuela en todas nuestras tribulaciones, para que podamos también nosotros consolar a los que están en cualquier tribulación." },
+            { ref: "2 Corintios 12:9", text: "Y me ha dicho: Bástate mi gracia; porque mi poder se perfecciona en la debilidad." },
+            { ref: "Filipenses 4:13", text: "Todo lo puedo en Cristo que me fortalece." },
+            { ref: "2 Timoteo 2:12", text: "Si sufrimos, también reinaremos con él; si le negáremos, él también nos negará." },
+            { ref: "Hebreos 2:18", text: "Pues en cuanto él mismo padeció siendo tentado, es poderoso para socorrer a los que son tentados." },
+            { ref: "Hebreos 12:11", text: "Es verdad que ninguna disciplina al presente parece ser causa de gozo, sino de tristeza; pero después da fruto apacible de justicia a los que en ella han sido ejercitados." },
+            { ref: "Apocalipsis 2:10", text: "No temas en nada lo que vas a padecer... Sé fiel hasta la muerte, y yo te daré la corona de la vida." },
+            { ref: "Apocalipsis 3:10", text: "Por cuanto has guardado la palabra de mi paciencia, yo también te guardaré de la hora de la prueba que ha de venir sobre el mundo entero." },
+
+            // --- ALABANZA (27 Versículos) ---
+            { ref: "Salmos 150:6", text: "Todo lo que respira alabe a JAH. Aleluya." },
+            { ref: "Salmos 100:4", text: "Entrad por sus puertas con acción de gracias, por sus atrios con alabanza; alabadle, bendecid su nombre." },
+            { ref: "Salmos 103:1", text: "Bendice, alma mía, a Jehová, y bendiga todo mi ser su santo nombre." },
+            { ref: "Salmos 34:1", text: "Bendeciré a Jehová en todo tiempo; su alabanza estará de continuo en mi boca." },
+            { ref: "Hebreos 13:15", text: "Así que, ofrezcamos siempre a Dios, por medio de él, sacrificio de alabanza, es decir, fruto de labios que confiesan su nombre." },
+            { ref: "Salmos 9:1", text: "Te alabaré, oh Jehová, con todo mi corazón; contaré todas tus maravillas." },
+            { ref: "Salmos 146:2", text: "Alabaré a Jehová en mi vida; cantaré salmos a mi Dios mientras viva." },
+            { ref: "Efesios 5:19-20", text: "Hablando entre vosotros con salmos, con himnos y cánticos espirituales, cantando y alabando al Señor en vuestros corazones." },
+            { ref: "Hechos 16:25", text: "Pero a medianoche, orando Pablo y Silas, cantaban himnos a Dios; y los presos los oían." },
+            { ref: "Habacuc 3:17-18", text: "Aunque la higuera no florezca... con todo, yo me alegraré en Jehová, y me gozaré en el Dios de mi salvación." },
+            { ref: "Salmos 42:11", text: "¿Por qué te abates, oh alma mía, y por qué te turbas dentro de mí? Espera en Dios; porque aún he de alabarle, salvación mía y Dios mío." },
+            { ref: "Salmos 22:3", text: "Pero tú eres santo, tú que habitas entre las alabanzas de Israel." },
+            { ref: "Salmos 147:1", text: "Alabad a JAH, porque es bueno cantar salmos a nuestro Dios; porque suave y hermosa es la alabanza." },
+            { ref: "Salmos 33:1", text: "Alegraos, oh justos, en Jehová; en los íntegros es hermosa la alabanza." },
+            { ref: "Salmos 63:3", text: "Porque mejor es tu misericordia que la vida; mis labios te alabarán." },
+            { ref: "Salmos 113:3", text: "Desde el nacimiento del sol hasta donde se pone, sea alabado el nombre de Jehová." },
+            { ref: "1 Crónicas 16:23-24", text: "Cantad a Jehová, toda la tierra, proclamad de día en día su salvación. Cantad entre las gentes su gloria, y en todos los pueblos sus maravillas." },
+            { ref: "Salmos 8:1", text: "¡Oh Jehová, Señor nuestro, cuán glorioso es tu nombre en toda la tierra! Has puesto tu gloria sobre los cielos." },
+            { ref: "Salmos 18:3", text: "Invocaré a Jehová, quien es digno de ser alabado, y seré salvo de mis enemigos." },
+            { ref: "Salmos 29:2", text: "Dad a Jehová la gloria debida a su nombre; adorad a Jehová en la hermosura de la santidad." },
+            { ref: "Salmos 47:1", text: "Pueblos todos, batid las manos; aclamad a Dios con voz de júbilo." },
+            { ref: "Salmos 57:9-10", text: "Te alabaré entre los pueblos, oh Señor; cantaré de ti entre las naciones. Porque grande es hasta los cielos tu misericordia, y hasta las nubes tu verdad." },
+            { ref: "Salmos 66:1-2", text: "Aclamad a Dios con alegría, toda la tierra. Cantad la gloria de su nombre; poned gloria en su alabanza." },
+            { ref: "Salmos 71:14", text: "Mas yo esperaré siempre, y te alabaré más y más." },
+            { ref: "Salmos 89:1", text: "Las misericordias de Jehová cantaré perpetuamente; de generación en generación haré notoria tu verdad con mi boca." },
+            { ref: "Salmos 95:1-2", text: "Venid, aclamemos alegremente a Jehová; cantemos con júbilo a la roca de nuestra salvación. Lleguemos ante su presencia con alabanza." },
+            { ref: "Salmos 96:1-2", text: "Cantad a Jehová cántico nuevo; cantad a Jehová, toda la tierra. Cantad a Jehová, bendecid su nombre; anunciad de día en día su salvación." },
+
+            // --- ALTIVEZ / HUMILDAD (27 Versículos) ---
+            { ref: "Proverbios 16:5", text: "Abominación es a Jehová todo altivo de corazón; ciertamente no quedará impune." },
+            { ref: "Santiago 4:6", text: "Pero él da mayor gracia. Por esto dice: Dios resiste a los soberbios, y da gracia a los humildes." },
+            { ref: "Proverbios 16:18", text: "Antes del quebrantamiento es la soberbia, y antes de la caída la altivez de espíritu." },
+            { ref: "Salmos 51:17", text: "Los sacrificios de Dios son el espíritu quebrantado; al corazón contrito y humillado no despreciarás tú, oh Dios." },
+            { ref: "Mateo 23:12", text: "Porque el que se enaltece será humillado, y el que se humilla será enaltecido." },
+            { ref: "Salmos 138:6", text: "Porque Jehová es excelso, y atiende al humilde, mas al altivo mira de lejos." },
+            { ref: "Proverbios 18:12", text: "Antes del quebrantamiento se eleva el corazón del hombre, y antes de la honra es la humildad." },
+            { ref: "Proverbios 29:23", text: "La soberbia del hombre le abate; pero al humilde de espíritu sustenta la honra." },
+            { ref: "Proverbios 21:4", text: "Altivez de ojos, y orgullo de corazón, y pensamiento de impíos, son pecado." },
+            { ref: "Salmos 101:5", text: "...No sufriré al de ojos altaneros y de corazón fiero." },
+            { ref: "Isaías 57:15", text: "Porque así dijo el Alto y Sublime... Yo habito en la altura y la santidad, y con el quebrantado y humilde de espíritu..." },
+            { ref: "Salmos 10:4", text: "El malo, por la altivez de su rostro, no busca a Dios; no hay Dios en ninguno de sus pensamientos." },
+            { ref: "Proverbios 11:2", text: "Cuando viene la soberbia, viene también la deshonra; mas con los humildes está la sabiduría." },
+            { ref: "Proverbios 8:13", text: "El temor de Jehová es aborrecer el mal; la soberbia y la arrogancia, el mal camino, y la boca perversa, aborrezco." },
+            { ref: "Gálatas 6:3", text: "Porque el que se cree ser algo, no siendo nada, a sí mismo se engaña." },
+            { ref: "Romanos 12:16", text: "Unánimes entre vosotros; no altivos, sino asociándoos con los humildes. No seáis sabios en vuestra propia opinión." },
+            { ref: "1 Pedro 5:6", text: "Humillaos, pues, bajo la poderosa mano de Dios, para que él os exalte cuando fuere tiempo." },
+            { ref: "Miqueas 6:8", text: "Oh hombre, él te ha declarado lo que es bueno, y qué pide Jehová de ti: solamente hacer justicia, y amar misericordia, y humillarte ante tu Dios." },
+            { ref: "Filipenses 2:3", text: "Nada hagáis por contienda o por vanagloria; antes bien con humildad, estimando cada uno a los demás como superiores a él mismo." },
+            { ref: "Colosenses 3:12", text: "Vestíos, pues, como escogidos de Dios, santos y amados, de entrañable misericordia, de benignidad, de humildad, de mansedumbre, de paciencia." },
+            { ref: "Tito 3:2", text: "Que a nadie difamen, que no sean pendencieros, sino amables, mostrando toda mansedumbre para con todos los hombres." },
+            { ref: "Salmos 25:9", text: "Encaminará a los humildes por el juicio, y enseñará a los mansos su carrera." },
+            { ref: "Salmos 147:6", text: "Jehová exalta a los humildes, y humilla a los impíos hasta la tierra." },
+            { ref: "Proverbios 3:34", text: "Ciertamente él escarnecerá a los escarnecedores, y a los humildes dará gracia." },
+            { ref: "Proverbios 15:33", text: "El temor de Jehová es enseñanza de sabiduría; y a la honra precede la humildad." },
+            { ref: "Proverbios 22:4", text: "Riquezas, honra y vida son la remuneración de la humildad y del temor de Jehová." },
+            { ref: "Isaías 66:2", text: "Mi mano hizo todas estas cosas, y así todas estas cosas fueron, dice Jehová; pero miraré a aquel que es pobre y humilde de espíritu, y que tiembla a mi palabra." },
+
+            // --- SERVICIO (27 Versículos) ---
+            { ref: "Marcos 10:45", text: "Porque el Hijo del Hombre no vino para ser servido, sino para servir, y para dar su vida en rescate por muchos." },
+            { ref: "Mateo 23:11", text: "El que es el mayor de vosotros, sea vuestro siervo." },
+            { ref: "Gálatas 5:13", text: "Porque vosotros, hermanos, a libertad fuisteis llamados; solamente que no uséis la libertad como ocasión para la carne, sino servíos por amor los unos a los otros." },
+            { ref: "Colosenses 3:23-24", text: "Y todo lo que hagáis, hacedlo de corazón, como para el Señor y no para los hombres... porque a Cristo el Señor servís." },
+            { ref: "Juan 13:14-15", text: "Pues si yo, el Señor y el Maestro, he lavado vuestros pies, vosotros también debéis lavaros los pies los unos a los otros. Porque ejemplo os he dado..." },
+            { ref: "Lucas 22:26", text: "Mas no así vosotros, sino sea el mayor entre vosotros como el más joven, y el que dirige, como el que sirve." },
+            { ref: "Hebreos 6:10", text: "Porque Dios no es injusto para olvidar vuestra obra y el trabajo de amor que habéis mostrado hacia su nombre, habiendo servido a los santos y sirviéndoles aún." },
+            { ref: "1 Juan 3:18", text: "Hijitos míos, no amemos de palabra ni de lengua, sino de hecho y en verdad." },
+            { ref: "Efesios 6:7", text: "Sirviendo con buena voluntad, como al Señor y no a los hombres." },
+            { ref: "Mateo 25:40", text: "Y respondiendo el Rey, les dirá: De cierto os digo que en cuanto lo hicisteis a uno de estos mis hermanos más pequeños, a mí lo hicisteis." },
+            { ref: "1 Pedro 4:10", text: "Cada uno según el don que ha recibido, minístrelo a los otros, como buenos administradores de la multiforme gracia de Dios." },
+            { ref: "Romanos 12:11", text: "En lo que requiere diligencia, no perezosos; fervientes en espíritu, sirviendo al Señor." },
+            { ref: "1 Corintios 15:58", text: "Así que, hermanos míos amados, estad firmes y constantes, creciendo en la obra del Señor siempre, sabiendo que vuestro trabajo en el Señor no es en vano." },
+            { ref: "Juan 12:26", text: "Si alguno me sirve, sígame; y donde yo estuviere, allí también estará mi servidor. Si alguno me sirviere, mi Padre le honrará." },
+            { ref: "Gálatas 6:9-10", text: "No nos cansemos, pues, de hacer bien; porque a su tiempo segaremos, si no desmayamos. Así que, según tengamos oportunidad, hagamos bien a todos..." },
+            { ref: "Hechos 20:35", text: "En todo os he enseñado que, trabajando así, se debe ayudar a los necesitados, y recordar las palabras del Señor Jesús, que dijo: Más bienaventurado es dar que recibir." },
+            { ref: "Deuteronomio 10:12", text: "Ahora, pues, Israel, ¿qué pide Jehová tu Dios de ti, sino que temas a Jehová tu Dios, que andes en todos sus caminos, y que lo ames, y sirvas a Jehová tu Dios con todo tu corazón y con toda tu alma?" },
+            { ref: "1 Samuel 12:24", text: "Solamente temed a Jehová y servidle de verdad con todo vuestro corazón, pues considerad cuán grandes cosas ha hecho por vosotros." },
+            { ref: "Salmos 100:2", text: "Servid a Jehová con alegría; venid ante su presencia con regocijo." },
+            { ref: "Mateo 4:10", text: "Entonces Jesús le dijo: Vete, Satanás, porque escrito está: Al Señor tu Dios adorarás, y a él solo servirás." },
+            { ref: "Mateo 6:24", text: "Ninguno puede servir a dos señores; porque o aborrecerá al uno y amará al otro, o estimará al uno y menospreciará al otro. No podéis servir a Dios y a las riquezas." },
+            { ref: "Romanos 7:6", text: "Pero ahora estamos libres de la ley, por haber muerto para aquella en que estábamos sujetos, de modo que sirvamos bajo el régimen nuevo del Espíritu." },
+            { ref: "Romanos 12:1", text: "Así que, hermanos, os ruego por las misericordias de Dios, que presentéis vuestros cuerpos en sacrificio vivo, santo, agradable a Dios, que es vuestro culto racional." },
+            { ref: "Gálatas 5:14", text: "Porque toda la ley en esta sola palabra se cumple: Amarás a tu prójimo como a ti mismo." },
+            { ref: "Efesios 2:10", text: "Porque somos hechura suya, creados en Cristo Jesús para buenas obras, las cuales Dios preparó de antemano para que anduviésemos en ellas." },
+            { ref: "1 Tesalonicenses 1:9", text: "Porque ellos mismos cuentan de nosotros la manera en que nos recibisteis, y cómo os convertisteis de los ídolos a Dios, para servir al Dios vivo y verdadero." },
+            { ref: "Hebreos 9:14", text: "¿Cuánto más la sangre de Cristo, el cual mediante el Espíritu eterno se ofreció a sí mismo sin mancha a Dios, limpiará vuestras conciencias de obras muertas para que sirváis al Dios vivo?" },
+
+            // --- PAZ (26 Versículos) ---
+            { ref: "Juan 14:27", text: "La paz os dejo, mi paz os doy; yo no os la doy como el mundo la da. No se turbe vuestro corazón, ni tenga miedo." },
+            { ref: "Filipenses 4:7", text: "Y la paz de Dios, que sobrepasa todo entendimiento, guardará vuestros corazones y vuestros pensamientos en Cristo Jesús." },
+            { ref: "Juan 16:33", text: "Estas cosas os he hablado para que en mí tengáis paz. En el mundo tendréis aflicción; pero confiad, yo he vencido al mundo." },
+            { ref: "Salmos 4:8", text: "En paz me acostaré, y asimismo dormiré; porque solo tú, Jehová, me haces vivir confiado." },
+            { ref: "Efesios 2:14", text: "Porque él es nuestra paz, que de ambos pueblos hizo uno, derribando la pared intermedia de separación." },
+            { ref: "Romanos 15:13", text: "Y el Dios de esperanza os llene de todo gozo y paz en el creer, para que abundéis en esperanza por el poder del Espíritu Santo." },
+            { ref: "Colosenses 3:15", text: "Y la paz de Dios gobierne en vuestros corazones, a la que asimismo fuisteis llamados en un solo cuerpo; y sed agradecidos." },
+            { ref: "Salmos 29:11", text: "Jehová dará poder a su pueblo; Jehová bendecirá a su pueblo con paz." },
+            { ref: "Números 6:24-26", text: "Jehová te bendiga, y te guarde; Jehová haga resplandecer su rostro sobre ti, y tenga de ti misericordia; Jehová alce sobre ti su rostro, y ponga en ti paz." },
+            { ref: "Salmos 119:165", text: "Mucha paz tienen los que aman tu ley, y no hay para ellos tropiezo." },
+            { ref: "Isaías 48:18", text: "¡Oh, si hubieras atendido a mis mandamientos! Fuera entonces tu paz como un río, y tu justicia como las ondas del mar." },
+            { ref: "Gálatas 5:22", text: "Mas el fruto del Espíritu es amor, gozo, paz, paciencia, benignidad, bondad, fe..." },
+            { ref: "2 Tesalonicenses 3:16", text: "Y el mismo Señor de paz os dé siempre paz en toda manera. El Señor sea con todos vosotros." },
+            { ref: "Isaías 26:12", text: "Jehová, tú nos darás paz, porque también hiciste en nosotros todas nuestras obras." },
+            { ref: "Salmos 85:8", text: "Escucharé lo que hablará Jehová Dios; porque hablará paz a su pueblo y a sus santos, para que no se vuelvan a la locura." },
+            { ref: "Romanos 5:1", text: "Justificados, pues, por la fe, tenemos paz para con Dios por medio de nuestro Señor Jesucristo." },
+            { ref: "Isaías 9:6", text: "Porque un niño nos es nacido, hijo nos es dado, y el principado sobre su hombro; y se llamará su nombre Admirable, Consejero, Dios Fuerte, Padre Eterno, Príncipe de Paz." },
+            { ref: "Isaías 32:17", text: "Y el efecto de la justicia será paz; y la labor de la justicia, reposo y seguridad para siempre." },
+            { ref: "Isaías 53:5", text: "Mas él herido fue por nuestras rebeliones, molido por nuestros pecados; el castigo de nuestra paz fue sobre él, y por su llaga fuimos nosotros curados." },
+            { ref: "Isaías 54:10", text: "Porque los montes se moverán, y los collados temblarán, pero no se apartará de ti mi misericordia, ni el pacto de mi paz se quebrantará, dijo Jehová, el que tiene misericordia de ti." },
+            { ref: "Jeremías 29:11", text: "Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis." },
+            { ref: "Jeremías 33:6", text: "He aquí que yo les traeré sanidad y medicina; y los curaré, y les revelaré abundancia de paz y de verdad." },
+            { ref: "Hageo 2:9", text: "La gloria postrera de esta casa será mayor que la primera, ha dicho Jehová de los ejércitos; y daré paz en este lugar, dice Jehová de los ejércitos." },
+            { ref: "Zacarías 9:10", text: "Y de Efraín destruiré los carros, y los caballos de Jerusalén, y los arcos de guerra serán quebrados; y hablará paz a las naciones, y su señorío será de mar a mar, y desde el río hasta los fines de la tierra." },
+            { ref: "Romanos 8:6", text: "Porque el ocuparse de la carne es muerte, pero el ocuparse del Espíritu es vida y paz." },
+            { ref: "Romanos 14:17", text: "Porque el reino de Dios no es comida ni bebida, sino justicia, paz y gozo en el Espíritu Santo." },
+
+            // --- OBEDIENCIA (26 Versículos) ---
+            { ref: "Juan 14:15", text: "Si me amáis, guardad mis mandamientos." },
+            { ref: "1 Juan 5:3", text: "Pues este es el amor a Dios, que guardemos sus mandamientos; y sus mandamientos no son gravosos." },
+            { ref: "1 Samuel 15:22", text: "Ciertamente el obedecer es mejor que los sacrificios, y el prestar atención que la grosura de los carneros." },
+            { ref: "Josué 1:8", text: "Nunca se apartará de tu boca este libro de la ley, sino que de día y de noche meditarás en él... porque entonces harás prosperar tu camino, y todo te saldrá bien." },
+            { ref: "Santiago 1:22", text: "Pero sed hacedores de la palabra, y no tan solamente oidores, engañándoos a vosotros mismos." },
+            { ref: "Hechos 5:29", text: "Respondiendo Pedro y los apóstoles, dijeron: Es necesario obedecer a Dios antes que a los hombres." },
+            { ref: "Juan 14:21", text: "El que tiene mis mandamientos, y los guarda, ese es el que me ama; y el que me ama, será amado por mi Padre, y yo le amaré, y me manifestaré a él." },
+            { ref: "Jeremías 7:23", text: "Mas esto les mandé, diciendo: Escuchad mi voz, y seré a vosotros por Dios, y vosotros me seréis por pueblo; y andad en todo camino que os mande, para que os vaya bien." },
+            { ref: "Deuteronomio 28:1", text: "Acontecerá que si oyeres atentamente la voz de Jehová tu Dios, para guardar y poner por obra todos sus mandamientos... Jehová tu Dios te exaltará sobre todas las naciones." },
+            { ref: "Santiago 1:25", text: "Mas el que mira atentamente en la perfecta ley, la de la libertad, y persevera en ella, no siendo oidor olvidadizo, sino hacedor de la obra, este será bienaventurado en lo que hace." },
+            { ref: "Mateo 7:24", text: "Cualquiera, pues, que me oye estas palabras, y las hace, le compararé a un hombre prudente, que edificó su casa sobre la roca." },
+            { ref: "Lucas 11:28", text: "Y él dijo: Antes bienaventurados los que oyen la palabra de Dios, y la guardan." },
+            { ref: "Filipenses 2:8", text: "Y estando en la condición de hombre, se humilló a sí mismo, haciéndose obediente hasta la muerte, y muerte de cruz." },
+            { ref: "Hebreos 5:8-9", text: "Y aunque era Hijo, por lo que padeció aprendió la obediencia; y habiendo sido perfeccionado, vino a ser autor de eterna salvación para todos los que le obedecen." },
+            { ref: "1 Pedro 1:14", text: "Como hijos obedientes, no os conforméis a los deseos que antes teníais estando en vuestra ignorancia." },
+            { ref: "Romanos 6:17", text: "Pero gracias a Dios, que aunque erais esclavos del pecado, habéis obedecido de corazón a aquella forma de doctrina a la cual fuisteis entregados." },
+            { ref: "Éxodo 19:5", text: "Ahora, pues, si diereis oído a mi voz, y guardareis mi pacto, vosotros seréis mi especial tesoro sobre todos los pueblos; porque mía es toda la tierra." },
+            { ref: "Deuteronomio 11:26-28", text: "He aquí yo pongo hoy delante de vosotros la bendición y la maldición: la bendición, si oyereis los mandamientos de Jehová vuestro Dios, que yo os prescribo hoy, y la maldición, si no oyereis." },
+            { ref: "Deuteronomio 13:4", text: "En pos de Jehová vuestro Dios andaréis; a él temeréis, guardaréis sus mandamientos y escucharéis su voz, a él serviréis, y a él seguiréis." },
+            { ref: "1 Reyes 2:3", text: "Guarda los preceptos de Jehová tu Dios, andando en sus caminos, y observando sus estatutos y mandamientos, sus decretos y sus testimonios... para que prosperes en todo lo que hagas." },
+            { ref: "Proverbios 10:17", text: "Camino a la vida es guardar la instrucción; pero quien desecha la reprensión, yerra." },
+            { ref: "Proverbios 19:16", text: "El que guarda el mandamiento guarda su alma; mas el que menosprecia sus caminos morirá." },
+            { ref: "Isaías 1:19", text: "Si quisiereis y oyereis, comeréis el bien de la tierra." },
+            { ref: "Jeremías 11:4", text: "El cual mandé a vuestros padres el día que los saqué de la tierra de Egipto, del horno de hierro, diciéndoles: Oíd mi voz, y cumplid mis palabras, conforme a todo lo que os mando." },
+            { ref: "Hechos 4:19-20", text: "Mas Pedro y Juan respondieron diciéndoles: Juzgad si es justo delante de Dios obedecer a vosotros antes que a Dios; porque no podemos dejar de decir lo que hemos visto y oído." },
+            { ref: "Romanos 16:19", text: "Porque vuestra obediencia ha venido a ser notoria a todos, así que me gozo de vosotros; pero quiero que seáis sabios para el bien, e ingenuos para el mal." }
+        ];
+
+        // Función para mezclar aleatoriamente el arreglo
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        let shuffledVerses = [];
+        let currentIndex = 0;
+        let slideInterval;
+        let progressInterval;
+        let progress = 0;
+
+        const root = document.documentElement;
+        const container = document.getElementById('verse-container');
+        const textElement = document.getElementById('verse-text');
+        const refElement = document.getElementById('verse-ref');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const TIME_MS = 60000; // 60 segundos
+
+        function applyRandomTheme() {
+            // Seleccionar un tema de color aleatorio de nuestra lista
+            const randomTheme = colorThemes[Math.floor(Math.random() * colorThemes.length)];
+            
+            // Aplicar el tema actualizando las variables CSS globales
+            root.style.setProperty('--card-bg', randomTheme.bg);
+            root.style.setProperty('--text-color', randomTheme.text);
+            root.style.setProperty('--accent-color', randomTheme.accent);
+        }
+
+        function updateVerse() {
+            // Iniciar efecto de desvanecimiento para ocultar
+            container.classList.add('fade-out');
+
+            setTimeout(() => {
+                // Reiniciar ciclo de versículos si llegamos al final
+                if (currentIndex >= shuffledVerses.length) {
+                    shuffledVerses = shuffleArray([...verses]);
+                    currentIndex = 0;
+                }
+
+                // Obtener nuevo versículo
+                const currentVerse = shuffledVerses[currentIndex];
+                textElement.innerText = currentVerse.text;
+                refElement.innerText = currentVerse.ref;
+
+                // Cambiar el tema de color antes de volver a aparecer
+                applyRandomTheme();
+
+                // Volver a aparecer con todo actualizado
+                container.classList.remove('fade-out');
+                currentIndex++;
+            }, 1000); 
+        }
+
+        function startDisplay() {
+            shuffledVerses = shuffleArray([...verses]);
+            applyRandomTheme(); // Aplicar color al arrancar
+            updateVerse();
+            resetTimers();
+        }
+
+        function resetTimers() {
+            clearInterval(slideInterval);
+            clearInterval(progressInterval);
+            progress = 0;
+            progressBar.style.width = '0%';
+
+            progressInterval = setInterval(() => {
+                progress += (100 / (TIME_MS / 1000));
+                progressBar.style.width = `${progress}%`;
+            }, 1000);
+
+            slideInterval = setInterval(() => {
+                progress = 0;
+                progressBar.style.width = '0%';
+                updateVerse();
+            }, TIME_MS);
+        }
+
+        // Cambiar manualmente al hacer clic
+        document.body.addEventListener('click', () => {
+            updateVerse();
+            resetTimers();
+        });
+
+        window.onload = startDisplay;
+
+    </script>
+</body>
+</html>
